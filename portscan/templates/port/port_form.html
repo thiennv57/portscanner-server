@@ -1,0 +1,54 @@
+{% extends "pages/base.html" %}
+{% load debug_tags %} 
+{% block title %}Port Scan{% endblock %}
+{% block content %}
+    
+    <div class="row">
+        <div class="col-sm-2">
+            <h5>Add port</h5>
+            <form method="POST" novalidate action="">
+                {% csrf_token %}
+                {% load widget_tweaks %}
+                {% for field in form.visible_fields %}
+                    <div class="form-group">
+                        {% if form.is_bound %}
+                            {% if field.errors %}
+                                {% render_field field class="form-control is-invalid" %}
+                                {% for error in field.errors %}
+                                <div class="invalid-feedback">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                {% render_field field class="form-control is-valid" %}
+                            {% endif %}
+                        {% else %}
+                            {% render_field field class="form-control" %}
+                            
+                        {% endif %}
+
+                        {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-success">Add</button>
+            </form>
+        </div>
+        
+        <div class="col-sm-10">
+            <h5>Port list</h5>
+            {% for port in ports %}
+                <button type="button" class="btn btn-info">
+                    {{port.port}}
+                    <span class="badge badge-light">
+                        <form method="POST" action="/port/{{port.pk}}/delete" id="port-delete-{{port.pk}}">
+                            {% csrf_token %}
+                            <a href="#" onclick="document.getElementById('port-delete-{{port.pk}}').submit()">x</a>
+                        </form>
+                    </span>
+                </button>
+            {% endfor %}
+        </div>
+        
+{% endblock %}

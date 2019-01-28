@@ -1,0 +1,108 @@
+{% extends "pages/base.html" %}
+{% load static %}
+
+{% block title %}{% endblock %}
+{% block content %}
+    <h2>Profile</h2>
+    <hr>
+    <form method="POST" novalidate action="">
+        <div class="row">
+            <div class="col-md-10">
+                {% csrf_token %}
+                {% load widget_tweaks %}
+                {% for hidden_field in form.hidden_fields %}
+                    {{ hidden_field }}
+                {% endfor %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {% for error in form.non_field_errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% for field in form.visible_fields %}
+                    <div class="form-group">
+                        {{ field.label_tag }}
+                        
+                        {% if form.is_bound %}
+                            {% if field.errors %}
+                                {% render_field field class="form-control is-invalid" %}
+                                
+                                {% for error in field.errors %}
+                                <div class="invalid-feedback">
+                                    {{ error }}
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                {% render_field field class="form-control is-valid" %}
+                                
+                            {% endif %}
+                        {% else %}
+                            {% render_field field class="form-control" %}
+                            
+                        {% endif %}
+
+                        {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row">
+            <div  class="col-md-2">
+                <label><input type="radio" name="colorRadio" value="red">Ip adress</label>
+            </div>
+            <div  class="col-md-2">
+                <label><input type="radio" name="colorRadio" value="green">Ip subnetmask</label>
+            </div>
+            <div  class="col-md-2">
+                <label><input type="radio" name="colorRadio" value="blue">Ip range</label>
+            </div>
+        </div>
+            
+        {{ subnets.management_form }}
+        <div class="form-row form-group red checked">
+            <div class="col-md-4">
+                {{subnets.forms.0.start_ip}}
+            </div>
+        </div>
+
+        <div class="row form-row form-group spacer green checked">
+            <div class="col-md-6">
+                <div class="input-group">
+                    {{subnets.forms.1.start_ip}}&nbsp;&nbsp;/&nbsp;&nbsp;
+                    {{subnets.forms.1.subnetmask}}
+                </div>
+            </div>
+        </div>
+
+        <div class="row form-row form-group spacer blue checked">
+            <div class="col-md-6">
+                <div class="input-group">
+                    {{subnets.forms.2.start_ip}}&nbsp;&nbsp;-&nbsp;&nbsp;
+                    {{subnets.forms.2.end_ip}}
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('input[type="radio"]').click(function(){
+                var inputValue = $(this).attr("value");
+                var targetBox = $("." + inputValue);
+                $(".checked").not(targetBox).hide();
+                $(targetBox).show();
+                
+            });
+        });
+    </script>
+    <style type="text/css">
+        .checked{
+            display: none;
+        }
+    </style>
+{% endblock %}

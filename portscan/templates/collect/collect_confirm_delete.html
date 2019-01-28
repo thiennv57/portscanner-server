@@ -1,0 +1,17 @@
+{% extends "pages/base.html" %}
+{% block title %}{% endblock %}
+{% block content %}
+    <h2></h2>
+    <hr>
+    <div>
+        <form method="post" action="" class="js-collect-delete-form">
+            {% csrf_token %}
+            <div class="modal-body">
+                <p class="lead">Are you sure you want to delete <strong>{{ object.name }}</strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

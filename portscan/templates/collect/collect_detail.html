@@ -1,0 +1,35 @@
+{% extends "pages/base.html" %}
+{% block title %}Port Scan{% endblock %}
+{% block content %}
+    <h4>{{collect.name}}</h4>
+    <hr>
+    <div class = "row">
+        <div class="list-group col-sm-4" id="myList" role="tablist">
+            {% for ip in collect.ip_set.all %}
+                <a class="list-group-item list-group-item-action" data-toggle="list" href="#ip{{ip.ip}}" role="tab">{{ip.ip}}</a>
+            {% endfor %}
+        </div>
+        <div class="tab-content col-sm-8">
+            {% for ip in collect.ip_set.all %}
+                <div class="tab-pane" id="ip{{ip.ip}}" role="tabpanel">
+                    <div class="row">
+                        <div class="col-sm-2"><b>Port</b></div>
+                        <div class="col-sm-4"><b>Scan date</b></div>
+                    </div>
+                    <hr>
+                    {% for portstate in ip.portstate_set.all %}
+                        <div class="row">
+                            <div class="col-sm-2">{{portstate.port.port}}</div>
+                            <div class="col-sm-4">{{portstate.scan_date}}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <script>
+        $(function () {
+            $('#myList a:first-child').tab('show')
+        })
+    </script>
+{% endblock %}
