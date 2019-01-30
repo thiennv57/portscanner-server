@@ -5,7 +5,7 @@
 {% block content %}
     <h2>Profile</h2>
     <hr>
-    <form method="POST" novalidate action="">
+    <form method="POST" novalidate action="" enctype="multipart/form-data">
         <div class="row">
             <div class="col-md-10">
                 {% csrf_token %}
@@ -52,24 +52,27 @@
         </div>
         <div class="row">
             <div  class="col-md-2">
-                <label><input type="radio" name="colorRadio" value="red">Ip adress</label>
+                <label><input type="radio" name="colorRadio" value="ip">Ip adress</label>
             </div>
             <div  class="col-md-2">
-                <label><input type="radio" name="colorRadio" value="green">Ip subnetmask</label>
+                <label><input type="radio" name="colorRadio" value="ipsubnet">Ip subnetmask</label>
             </div>
             <div  class="col-md-2">
-                <label><input type="radio" name="colorRadio" value="blue">Ip range</label>
+                <label><input type="radio" name="colorRadio" value="ippool">Ip range</label>
+            </div>
+            <div  class="col-md-2">
+                <label><input type="radio" name="colorRadio" value="ipimport">Import Ip</label>
             </div>
         </div>
             
         {{ subnets.management_form }}
-        <div class="form-row form-group red checked">
+        <div class="form-row form-group ip checked">
             <div class="col-md-4">
                 {{subnets.forms.0.start_ip}}
             </div>
         </div>
 
-        <div class="row form-row form-group spacer green checked">
+        <div class="row form-row form-group spacer ipsubnet checked">
             <div class="col-md-6">
                 <div class="input-group">
                     {{subnets.forms.1.start_ip}}&nbsp;&nbsp;/&nbsp;&nbsp;
@@ -78,13 +81,16 @@
             </div>
         </div>
 
-        <div class="row form-row form-group spacer blue checked">
+        <div class="row form-row form-group spacer ippool checked">
             <div class="col-md-6">
                 <div class="input-group">
                     {{subnets.forms.2.start_ip}}&nbsp;&nbsp;-&nbsp;&nbsp;
                     {{subnets.forms.2.end_ip}}
                 </div>
             </div>
+        </div>
+        <div class="form-group form-group spacer ipimport checked">
+            <input type="file" title="Upload excel file" name="excel_file" required="required">
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>

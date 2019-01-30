@@ -6,7 +6,7 @@
         <div class="col-sm-2">
             {% if Configures %}
                 {% for configure in Configures %}
-                    <a href="/configure/{{configure.pk}}/update">{{configure.scantime}}</a></span>
+                    <a href="/configure/{{configure.pk}}/update">{{configure.scantime}} day</a></span>
                 {% endfor %}
             {% else %}
                 <a href="/configure/new" class="btn btn-success " role="button">New Configure</a>

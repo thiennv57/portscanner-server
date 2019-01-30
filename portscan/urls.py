@@ -4,7 +4,6 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-    path('result', views.result),
     path('', views.CollectList.as_view(), name="collects"),
     path('collects', views.CollectList.as_view(), name="collects"),
     path('collect/new', views.CollectIpCreate.as_view(), name="collect-new"),

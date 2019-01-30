@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+    table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    }
+    th, td {
+    padding: 5px;
+    text-align: left;    
+    }
+</style>
+</head>
+<body>
+    <table style="width:100%">
+        <tr>
+            <th>Collect</th>
+            <th>Ips</th>
+        </tr>
+        {% for collect in collects  %}
+            <tr>
+                <td>{{collect.name}}</td>
+                <td>
+                    {% for ip in collect.ip_set.all %}
+                        {% if ip.portstate_set.all %}
+                            <b>{{ip.ip}}:</b>
+                            {% for portstate in ip.portstate_set.all %}
+                                {% if port.scan_date > scantime_present %}
+                                    {{portstate.port.port}},&nbsp
+                                {% endif %}
+                            {% endfor %}
+                            <br>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

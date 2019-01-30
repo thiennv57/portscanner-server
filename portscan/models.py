@@ -10,6 +10,19 @@ from django.utils import timezone
 from netaddr import *
 import pprint
 
+SCAN_TIMES = (
+    (1, '1 day'),
+    (2, '2 day'),
+    (3, '3 day'),
+    (4, '4 day'),
+    (5, '5 day'),
+    (6, '6 day'),
+    (7, '7 day'),
+    (14, '2 weeks'),
+    (21, '3 weeks'),
+    (30, '1 month')
+)
+
 class Collect(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.CharField(max_length=1000, blank=True)
@@ -37,9 +50,10 @@ class Subnet(Ip):
     subnetmask =  models.IntegerField(null=True, blank=True)
     start_ip = models.CharField(max_length=1000, blank=True)
     end_ip = models.CharField(max_length=1000, blank=True)
+    excel_file = models.FileField(max_length=1000, blank=True)
 
 class Configure(models.Model):
-    scantime = models.IntegerField()
+    scantime = models.IntegerField(unique=True, choices=SCAN_TIMES, default=1)
     email = models.EmailField(blank=True)
     def __unicode__(self):
         return "%s %s" % (self.scantime, self.email)
@@ -57,4 +71,5 @@ class PortState(models.Model):
     ip = models.ForeignKey(Ip, on_delete=models.CASCADE)
     port = models.ForeignKey(Port, on_delete=models.CASCADE)
     scan_date = models.DateTimeField(blank=True)
+    last_scan_date = models.DateTimeField(blank=True)
 

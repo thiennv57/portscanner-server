@@ -3,15 +3,13 @@ from django.forms import ModelForm, inlineformset_factory
 from .models import Collect , Ip, Subnet, Configure, Port
 
 
-class CollectForm(forms.Form): 
+class CollectForm(forms.Form):
     class Meta:  
-        model = Collect  
+        model = Collect
 
 class IpForm(forms.ModelForm):
     class Meta:
-        model = Ip
         fields =  "__all__"
-
 
 class ConfigureForm(forms.Form):
     class Meta:  
@@ -32,7 +30,7 @@ SubnetFormSet = inlineformset_factory(
     Collect,
     Subnet,
     form=IpForm,
-    extra=3,
+    extra=4,
     widgets={
         'start_ip': forms.TextInput(attrs={
             'class': 'form-control',
