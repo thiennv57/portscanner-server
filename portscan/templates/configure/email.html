@@ -26,7 +26,7 @@
                         {% if ip.portstate_set.all %}
                             <b>{{ip.ip}}:</b>
                             {% for portstate in ip.portstate_set.all %}
-                                {% if port.scan_date > scantime_present %}
+                                {% if portstate.scan_date > scantime_present %}
                                     {{portstate.port.port}},&nbsp
                                 {% endif %}
                             {% endfor %}

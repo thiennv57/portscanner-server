@@ -1,21 +1,18 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import Collect, Ip, Port, Configure, PortState
-import pdb
-
 from django.views.generic import CreateView
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from .forms import CollectForm, IpForm, SubnetFormSet, ConfigureForm, PortForm
-
 from django.urls import reverse_lazy
 from django.db import transaction
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView, DetailView
 from netaddr import *
 from string import *
 import nmap
-import datetime
 from django.utils import timezone
+import datetime
 from background_task import background
 import openpyxl
 from django.core.mail import send_mail
@@ -23,11 +20,11 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template, render_to_string
 from django.template import Context
-
+import pdb
 @background(schedule=5)
 #Run scan after 5s
 def scan_ip():
-        scantime_present = datetime.datetime.now()
+        scantime_present = timezone.now()
         nm = nmap.PortScanner()
         ips = Ip.objects.all()
         for ip in ips:
@@ -38,10 +35,10 @@ def scan_ip():
                     if nm[str(ip.ip)].tcp(port.port)['state'] == 'open':
                         try:
                             obj = PortState.objects.get(port_id=port.id, ip_id=ip.id)
-                            obj.last_scan_date = datetime.datetime.now()
+                            obj.last_scan_date = timezone.now()
                             obj.save()
                         except PortState.DoesNotExist:
-                            obj = PortState(port_id=port.id, ip_id=ip.id, scan_date=datetime.datetime.now(), last_scan_date=datetime.datetime.now())
+                            obj = PortState(port_id=port.id, ip_id=ip.id, scan_date=timezone.now(), last_scan_date=timezone.now())
                             obj.save()
                     else:
                         try:
@@ -59,13 +56,13 @@ def send_email(scantime_present):
         'collects': Collect.objects.all,
         'scantime_present': scantime_present
     }
-
-    plaintext_context = Context(autoescape=False)  # HTML escaping not appropriate in plaintext
+    plaintext_context = Context(autoescape=False)
     subject = 'Scan result report'
     text_body = 'Time: '+str(scantime_present)
     html_body = render_to_string("configure/email.html", merge_data)
-
-    msg = EmailMultiAlternatives(subject=subject, from_email=settings.EMAIL_HOST_USER, to=["nvthien@vnpt.vn"], body=text_body)
+    mail_to = Configure.objects.order_by('-id')[0].email
+    msg = EmailMultiAlternatives(subject=subject, from_email=settings.EMAIL_HOST_USER, to=[mail_to], body=text_body)
+    # msg = EmailMultiAlternatives(subject=subject, from_email=settings.EMAIL_HOST_USER, to=["nvthien@vnpt.vn"], body=text_body)
     msg.attach_alternative(html_body, "text/html")
     msg.send()
 
@@ -295,7 +292,7 @@ class ConfigureCreate(CreateView):
         if form.is_valid():
             form.save()
             configure = Configure.objects.order_by('-id')[0]
-            scan_ip(repeat=configure.scantime)
+            scan_ip(repeat=configure.scantime*24*60*60)
             return redirect(reverse_lazy('configures'))
             
 class ConfigureUpdate(UpdateView):
@@ -308,5 +305,5 @@ class ConfigureUpdate(UpdateView):
         if form.is_valid():
             form.save()
             configure = Configure.objects.order_by('-id')[0]
-            scan_ip(repeat=configure.scantime)
+            scan_ip(repeat=configure.scantime*24*60*60)
             return redirect(reverse_lazy('configures'))

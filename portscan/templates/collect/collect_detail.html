@@ -20,7 +20,7 @@
                     {% for portstate in ip.portstate_set.all %}
                         <div class="row">
                             <div class="col-sm-2">{{portstate.port.port}}</div>
-                            <div class="col-sm-4">{{portstate.scan_date}}</div>
+                            <div class="col-sm-4">{{portstate.last_scan_date}}</div>
                         </div>
                     {% endfor %}
                 </div>
