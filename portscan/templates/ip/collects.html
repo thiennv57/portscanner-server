@@ -1,0 +1,28 @@
+{% extends "pages/base.html" %}
+{% block title %}Collect{% endblock %}
+{% block content %}
+    <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between align-items-center list-group-item-info">
+            <b>Group Ip</b>
+            <b>Update</b>
+            <b>Delete</b>
+        </li>
+        <div class="list-scroll">
+            {% for collect in Collects %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {% comment %} <a href="/collect/{{collect.pk}}/">{{collect.name}}</a> {% endcomment %}
+                    <a href="/collect/{{collect.pk}}/update">{{collect.name}}</a>
+                </li>
+            {% endfor %}
+        </div>
+    </ul>
+    <hr>
+    <a href="/collect/new" class="btn btn-success " role="button">New collect</a>
+    <style type="text/css">
+        .list-scroll{
+            max-height: 450px;
+            overflow:scroll;
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+{% endblock %}

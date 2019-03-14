@@ -1,7 +1,7 @@
 {% extends "pages/base.html" %}
 {% block title %}Collect{% endblock %}
 {% block content %}
-    <div class="row">
+    {% comment %} <div class="row">
         <div class ="col-sm-9">
             <h4>{{collect.name}}</h4>
             <p>{{collect.description}}</p>
@@ -40,7 +40,7 @@
                 <tbody>
                     {% for ip in collect.ip_set.all %}
                         <tr data-toggle="collapse" data-target="#{{ip.ip}}" class="accordion-toggle">
-                            <td><a href="/ip/{{ip.pk}}/update">{{ip.ip}}</a></td>
+                            <td>{{ip.ip}}</td>
                             <td>
                                 {% for portstate in ip.portstate_set.all %}
                                     {{portstate.port.port}},
@@ -76,7 +76,8 @@
             </div>
         </div>
         <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">...</div>
-    </div>
+    </div> {% endcomment %}
+    {{ip.ip}}
     <script>
         $(function () {
             $('#myList a:first-child').tab('show')

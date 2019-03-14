@@ -1,24 +1,30 @@
 {% extends "pages/base.html" %}
 {% block title %}Collect{% endblock %}
 {% block content %}
-    <ul class="list-group">
-        <li class="list-group-item d-flex justify-content-between align-items-center list-group-item-info">
-            <b>Group Ip</b>
-            <b>Update</b>
-            <b>Delete</b>
-        </li>
-        <div class="list-scroll">
-            {% for collect in Collects %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <a href="/collect/{{collect.pk}}/">{{collect.name}}</a>
-                    <a href="/collect/{{collect.pk}}/update">Update</a></span>
-                    <a href="/collect/{{collect.pk}}/delete">Delete</a>
-                </li>
-            {% endfor %}
+    {% if Collects %}
+        <div class="ip-list-table">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Collect</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for collect in Collects %}
+                        <tr data-toggle="collapse" data-target="#{{ip.ip}}" class="accordion-toggle">
+                            <td><a href="/collect/{{collect.pk}}/update">{{collect.name}}</a></td>
+                            <td>
+                                {{collect.description}}                                   
+                            </td>   
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-    </ul>
-    <hr>
+    {% endif %}
     <a href="/collect/new" class="btn btn-success " role="button">New collect</a>
+    
     <style type="text/css">
         .list-scroll{
             max-height: 450px;

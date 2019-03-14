@@ -1,54 +1,59 @@
 {% extends "pages/base.html" %}
-{% load debug_tags %} 
 {% block title %}Port{% endblock %}
 {% block content %}
-    
+    <form method="POST" novalidate action="">
+        <div class="form-row">
+        {% csrf_token %}
+        {% load widget_tweaks %}
+        <div class="col-sm-2 form-group">
+            <label for="port" >Add Port:</label>
+        </div>
+        <input type="text" name="port" maxlength="100" class="form-group form-control col-sm-4"
+            required id="port" placeholder="">
+        <div class="col-sm-1">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+        </div>
+    </form>
     <div class="row">
-        <div class="col-sm-2">
-            <h5>Add port</h5>
-            <form method="POST" novalidate action="">
-                {% csrf_token %}
-                {% load widget_tweaks %}
-                {% for field in form.visible_fields %}
-                    <div class="form-group">
-                        {% if form.is_bound %}
-                            {% if field.errors %}
-                                {% render_field field class="form-control is-invalid" %}
-                                {% for error in field.errors %}
-                                <div class="invalid-feedback">
-                                    {{ error }}
-                                </div>
-                                {% endfor %}
-                            {% else %}
-                                {% render_field field class="form-control is-valid" %}
-                            {% endif %}
-                        {% else %}
-                            {% render_field field class="form-control" %}
-                            
-                        {% endif %}
-
-                        {% if field.help_text %}
-                            <small class="form-text text-muted">{{ field.help_text }}</small>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-                <button type="submit" class="btn btn-success">Add</button>
-            </form>
+        <div class ="col-sm-2">
+            <b>Port list:</b>
         </div>
-        
-        <div class="col-sm-10">
-            <h5>Port list</h5>
+        <div class ="col-sm-10" id="port-table">
             {% for port in ports %}
-                <button type="button" class="btn btn-info">
+                <div class="modal fade" id="portModal-{{port.port}}" tabindex="0" role="dialog" aria-labelledby="portModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <form method="POST" action="/port/{{port.pk}}/delete" id="port-delete-{{port.pk}}">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <div class="modal-body">
+                                        <p class="lead"> Are you sure you want to delete this port <strong>{{port.port}}</strong></p>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <a class="btn btn-sm btn-secondary" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <a href="#" onclick="document.getElementById('port-delete-{{port.pk}}').submit()"
+                                        class="btn-sm btn btn-danger">Delete</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#portModal-{{port.port}}">
                     {{port.port}}
-                    <span class="badge badge-light">
-                        <form method="POST" action="/port/{{port.pk}}/delete" id="port-delete-{{port.pk}}">
-                            {% csrf_token %}
-                            <a href="#" onclick="document.getElementById('port-delete-{{port.pk}}').submit()">x</a>
-                        </form>
+                    <span class="badge badge-danger">
+                        <i class="fa fa-trash fa-danger" aria-hidden="true"></i>
                     </span>
-                </button>
-            {% endfor %}
+                </button>&nbsp;
+            {% endfor%}
         </div>
-        
+        <div class="modal fade" id="modal-collectport">
+            <div class="modal-dialog">
+                <div class="modal-content"></div>
+            </div>
+        </div>
+    </div>
+           
+       
 {% endblock %}

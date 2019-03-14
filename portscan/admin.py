@@ -10,15 +10,10 @@ class IpmodelAdmin(admin.ModelAdmin):
     list_filter = ['ip',]
     list_display = ['ip']
 
-class ConfiguremodelAdmin(admin.ModelAdmin):
-    list_filter = ['scantime',]
-    list_display = ['scantime']
-
 class PortmodelAdmin(admin.ModelAdmin):
     list_filter = ['port',]
     list_display = ['port']
 
 admin.site.register(Collect, CollectmodelAdmin)
 admin.site.register(Ip, IpmodelAdmin)
-admin.site.register(Configure, ConfiguremodelAdmin)
 admin.site.register(Port, PortmodelAdmin)

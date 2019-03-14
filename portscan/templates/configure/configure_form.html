@@ -2,8 +2,8 @@
 {% block title %}Configure{% endblock %}
 {% block content %}
     <h2>Configure</h2>
-    <div class="row">
-        <form method="POST" novalidate action="">
+    <form method="POST" novalidate action="">
+        <div class="form-row">
             {% csrf_token %}
             {% load widget_tweaks %}
             {% for hidden_field in form.hidden_fields %}
@@ -17,7 +17,7 @@
                 </div>
             {% endif %}
             {% for field in form.visible_fields %}
-                <div class="form-group">
+                <div class="form-group col-sm-6">
                     {{ field.label_tag }}
                     {% if form.is_bound %}
                         {% if field.errors %}
@@ -38,7 +38,7 @@
                     {% endif %}
                 </div>
             {% endfor %}
-            <button type="submit" class="btn btn-success">Save</button>
-        </form>
-    </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
 {% endblock %}
