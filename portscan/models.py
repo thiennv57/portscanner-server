@@ -1,27 +1,13 @@
 from __future__ import unicode_literals
-
 from django.db import models
 from django.conf import settings
 import django.utils.safestring as safestring
 import datetime
 from django.forms import ModelForm
 from django.urls import reverse
-from django.utils import timezone
 from netaddr import *
 import pprint
-
-SCAN_TIMES = (
-    (1, '1 day'),
-    (2, '2 day'),
-    (3, '3 day'),
-    (4, '4 day'),
-    (5, '5 day'),
-    (6, '6 day'),
-    (7, '7 day'),
-    (14, '2 weeks'),
-    (21, '3 weeks'),
-    (30, '1 month')
-)
+import pdb
 
 class Collect(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -38,20 +24,22 @@ class Collect(models.Model):
     def __unicode__(self):
         return "%s %s %s" % (self.name, self.descripttion, self.scanday)
 
+    def get_collect_ports(self):
+        return self.collectport_set.all().values_list('port', flat=True)
+
 class Ip(models.Model):
     collect = models.ForeignKey(Collect, on_delete=models.CASCADE)
     ip = models.CharField(max_length=1000)
     description = models.CharField(max_length=1000, blank=True)
-    def tenth_portstates(self):
-        return list(PortState.objects.filter(ip_id=self.id, openning=True))[0:9]
-    def eleventh_portstates(self):
-        return list(PortState.objects.filter(ip_id=self.id, openning=True))[10:]
+  
     def open_ports(self):
-        return list(PortState.objects.filter(ip_id=self.id, openning=True))
+        return list(PortState.objects.filter(ip_id=self.id, openning=True).order_by('port'))
+    def get_ip_ports(self):
+        return self.ipport_set.all().values_list('port', flat=True)
 
 class Configure(models.Model):
-    scanday = models.IntegerField(unique=True)
-    scanhour = models.IntegerField(unique=True)
+    scanday = models.IntegerField(unique=True, default=0)
+    scanhour = models.IntegerField(unique=True, default=0)
     email = models.EmailField(blank=True)
     def __unicode__(self):
         return "%s" % (self.scanday)
@@ -74,7 +62,7 @@ class PortState(models.Model):
         return "%s" % (self.port)
     
     def open_ports(self):
-        return list(PortState.objects.filter(openning=True))
+        return list(PortState.objects.filter(openning=True).order_by('port'))
     
 
 class IpPort(models.Model):
@@ -86,5 +74,7 @@ class IpPort(models.Model):
 class CollectPort(models.Model):
     collect = models.ForeignKey(Collect, on_delete=models.CASCADE)
     port = models.IntegerField()
+    class Meta: 
+        ordering = ('port',)
     def __unicode__(self):
         return "%s" % (self.port)

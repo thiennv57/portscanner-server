@@ -21,71 +21,74 @@ from django.template.loader import get_template, render_to_string
 from django.template import Context
 from django.shortcuts import render,get_object_or_404 
 from django.http import JsonResponse
-
+import copy
 import pdb
 
 @background(schedule=1)
-def scan_all_port(ip_id):
-    print("OK "+str(timezone.now())+str(ip_id))
+def scan_collect_ports(ip_id, list_port_scan):
+    print("Start time "+str(timezone.now())+str(ip_id))
     try:
         ip=Ip.objects.get(pk=ip_id)
-        try:
-            open_ports = []
-            nm = nmap.PortScanner()
+        open_ports = []
+        nm = nmap.PortScanner()
+        if not list_port_scan:
             results = nm.scan(ip.ip)
-            hosts_list = [(x, nm[x]['status']['state']) for x in nm.all_hosts()]
-            for host, status in hosts_list:
-                if status == "up":
-                    protocols = nm[host].all_protocols()
-                    for protocol in protocols:
-                        ports = nm[host][protocol]
-                        for port in ports:
-                            if ports[port]['state'] == 'open':
-                                open_ports.append(port)
-            for port in open_ports:
-                try:
-                    obj = PortState.objects.get(port=port, ip_id=ip_id)
-                except PortState.DoesNotExist:
-                    obj = PortState(port=port, ip_id=ip_id, scan_date=timezone.now(), last_scan_date=timezone.now(), openning=True)
-                    obj.save()
-                    print("Create portstate: "+str(ip_id))
-            openned_ports = []
-            for port in ip.portstate_set.all():
-                openned_ports.append(port.port)
-            closed_ports = [p for p in openned_ports if p not in open_ports]
-            if closed_ports:
-                for port in closed_ports:
-                    try:
-                        obj = PortState.objects.get(port=port, ip_id=ip_id)
-                        obj.openning = False
-                        obj.save()
-                    except:
-                        pass
-            else:
-                pass
-        except:
-            pass
+        else:
+            results = nm.scan(ip.ip, ports=list_port_scan)
+        hosts_list = [(x, nm[x]['status']['state']) for x in nm.all_hosts()]
+        
+        for host, status in hosts_list:
+            if status == "up":
+                protocols = nm[host].all_protocols()
+                for protocol in protocols:
+                    ports = nm[host][protocol]
+                    for port in ports:
+                        if ports[port]['state'] == 'open':
+                            open_ports.append(port)
+                create_portstate(ip_id, open_ports)
+                close_portstate(ip_id, open_ports, list_port_scan)
+        print("End time "+str(timezone.now())+str(ip_id))
     except:
         pass
 
-def create_ipport(ip, ports):
-    for port in ports:
+def create_portstate(ip_id, open_ports):
+    print("Create")
+    for port in open_ports:
         try:
-            obj = IpPort.objects.get(ip_id=ip.id, port=port)
-        except IpPort.DoesNotExist:
-            obj = IpPort(ip_id=ip.id, port=port, scan_date=timezone.now(), last_scan_date=timezone.now())
-            obj.save()
-
-
-def close_port(ip, openedport, openports):
-    closed_port = [p for p in openedport if p not in openport]
-    for port in closed_port:
-        try:
-            obj = PortState.objects.get(port=port, ip_id=ip.id)
-            obj.openning = False
-            obj.save()
+            obj = PortState.objects.get(port=port, ip_id=ip_id)
+            if obj.openning == False:
+                obj.openning = True
+                obj.save()
+            else:
+                pass
         except PortState.DoesNotExist:
-            pass
+            obj = PortState(port=port, ip_id=ip_id, scan_date=timezone.now(), last_scan_date=timezone.now(), openning=True)
+            obj.save()
+
+def close_portstate(ip_id, open_ports, list_port_scan):
+    ip=Ip.objects.get(pk=ip_id)
+    print("Close")
+    openned_ports = []
+    closed_ports = []
+    if not list_port_scan:
+        for port in ip.portstate_set.all():
+            openned_ports.append(port.port)
+        closed_ports = [p for p in openned_ports if p not in open_ports]
+    else:
+        list_port_scan = list_port_scan.split(",")
+        closed_ports = [int(p) for p in list_port_scan if int(p) not in open_ports]
+
+    if closed_ports:
+        for port in closed_ports:
+            try:
+                obj = PortState.objects.get(port=port, ip_id=ip_id)
+                obj.openning = False
+                obj.save()
+            except:
+                pass
+    else:
+        pass   
+
 
 def send_email(scantime_present):
     merge_data = {
@@ -118,7 +121,7 @@ def create_or_update_collect(collect):
             except Ip.DoesNotExist:
                 obj = Ip(collect_id=collect_id, ip=ip)
                 obj.save()                
-                scan_all_port(obj.id)
+                scan_collect_ports(obj.id, "")
     elif ip_subnet:
         for ip in IPNetwork(ip_subnet+str('/')+str(subnet)):
             try:
@@ -126,7 +129,7 @@ def create_or_update_collect(collect):
             except Ip.DoesNotExist:
                 obj = Ip(collect_id=collect_id, ip=ip)
                 obj.save()
-                scan_all_port(obj.id)
+                scan_collect_ports(obj.id, "")
     elif ip_pool_start:
         for ip in IPRange(ip_pool_start, ip_pool_end):
             try:
@@ -134,7 +137,7 @@ def create_or_update_collect(collect):
             except Ip.DoesNotExist:
                 obj = Ip(collect_id=collect_id, ip=ip)
                 obj.save()
-                scan_all_port(obj.id)
+                scan_collect_ports(obj.id, "")
     elif collect.request.FILES:
         excel_file = collect.request.FILES["excel_file"]
         wb = openpyxl.load_workbook(excel_file)
@@ -150,7 +153,7 @@ def create_or_update_collect(collect):
                         except Ip.DoesNotExist:
                             obj = Ip(collect_id=collect_id, ip=ip)
                             obj.save()
-                            scan_all_port(obj.id)
+                            scan_collect_ports(obj.id, "")
                     elif "/" in cell_data:
                         for ip in IPNetwork(cell_data):
                             try:
@@ -158,7 +161,7 @@ def create_or_update_collect(collect):
                             except Ip.DoesNotExist:
                                 obj = Ip(collect_id=collect_id, ip=ip)
                                 obj.save()
-                                scan_all_port(obj.id)
+                                scan_collect_ports(obj.id, "")
                     elif "-" in cell_data:
                         pos = (cell_data.find("-"))
                         ip_s = cell_data[:pos]
@@ -169,7 +172,7 @@ def create_or_update_collect(collect):
                             except Ip.DoesNotExist:
                                 obj = Ip(collect_id=collect_id, ip=ip)
                                 obj.save()
-                                scan_all_port(obj.id)
+                                scan_collect_ports(obj.id, "")
                     else:
                         pass
     else:
@@ -200,11 +203,6 @@ class CollectDetail(DetailView):
     model = Collect
     template_name = 'collect/collect_detail.html'
     
-
-    # @method_decorator(login_required)
-    # def dispatch(self, *args, **kwargs):
-    #     return super(AccountList, self).dispatch(*args, **kwargs)
-
 class CollectUpdate(UpdateView):
     model = Collect
     success_url = '/'
@@ -230,34 +228,43 @@ class CollectIpUpdate(UpdateView):
     success_url = reverse_lazy('collects')
     template_name = 'collect/collect_form.html'
     
-    
-
     def form_valid(self, form):
         with transaction.atomic():
             self.object = form.save()
+            collect=self.object
             create_or_update_collect(self)
-            pdb.set_trace()
+            list_port_scan = []
+            ports = Port.objects.all()
+            for port in ports:
+                list_port_scan.append(port.port)
+            collectport_list = copy.deepcopy(list_port_scan)
+            for port in collect.collectport_set.all():
+                if port.port not in collectport_list:
+                    collectport_list.append(port.port)
             if "scan_all" in self.request.POST:
-                for ip in self.object.ip_set.all():
-                    scan_all_port(ip.id)
+                for ip in collect.ip_set.all():
+                    scan_collect_ports(ip.id, "")
+            elif ("scan_ports" in self.request.POST or collect.scanday or collect.scanhour):
+                for ip in collect.ip_set.all():
+                    temp = copy.deepcopy(collectport_list)
+                    for port in ip.ipport_set.all():
+                        if port.port not in temp:
+                            temp.append(port.port)
+                    # try:
+                    #     configure = Configure.objects.order_by('-id')
+                    #     if configure:
+                    #         configure_time = configure[0].scanday*60+configure[0].scanhour
+                    # except CollectPort.DoesNotExist:
+                    #     configure_time = 0
+                    
+                    # if collect.scanday or collect.scanhour:
+                    collect_scan_time = collect.scanday*60+collect.scanhour
+                    scan_collect_ports(ip.id, str(temp).strip('[]'), repeat=collect_scan_time)
+                    # else:
+                    #     pdb.set_trace()
+                    #     scan_collect_ports(ip.id, str(temp).strip('[]'), repeat=configure_time)
             else:
                 pass
-            
-            if "ip_search" in self.request.POST:
-                try:
-                    a = self.request.POST["ip_search"]
-                except KeyError:
-                    a = None
-                if a:
-                    ip_list = Ip.objects.filter(
-                        ip__icontains=a,
-                        # owner=self.request.user
-                    )
-                else:
-                    # ip_list = Ip.objects.filter(owner=self.request.user)
-                    ip_list = Ip.objects.all()
-                
-                return ip_list
         return super(CollectIpUpdate, self).form_valid(form)
 
 class CollectDelete(DeleteView):

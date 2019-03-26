@@ -1,7 +1,4 @@
 {% extends "pages/base.html" %}
-<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" type="text/css" media="all" />
-<script src="https://code.jquery.com/jquery-3.3.1.js" type="text/javascript"> </script>
-<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js" type="text/javascript"></script>
 {% load debug_tags %}
 {% load static %}
 {% block title %}Collect{% endblock %}
@@ -14,7 +11,7 @@
             <div class ="col-sm-6">
             </div>
             <div class ="col-sm-1">
-                <a href="/collect/{{collect.pk}}/update" class="btn btn-sm btn-outline-success">Scan ports</a>
+                <button type="submit" form="form-collect" class="btn btn-sm btn-outline-success" name="scan_ports">Scan ports</button>
             </div>
             <div class ="col-sm-1">
                 <button type="submit" form="form-collect" class="btn btn-sm btn-outline-success" name="scan_all">Scan all</button>
@@ -156,37 +153,30 @@
         
         <div class="tab-pane fade" id="nav-ip" role="tabpanel" aria-labelledby="nav-ip-tab">
             {% if collect %}
-                <div class="ip-list-table">
-                    <table class="table table-striped">
-                        <thead>
+                <table id="ip_list" class="display table table-striped table-bordered table-hover">
+                    <thead >
+                        <tr>
+                            <th>Ip</th>
+                            <th>Port</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ip in collect.ip_set.all %}
                             <tr>
-                                <th scope="col">Ip</th>
-                                <th scope="col">Port</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for ip in collect.ip_set.all %}
-                                <tr data-toggle="collapse" data-target="#{{ip.ip}}" class="accordion-toggle">
-                                    <td><a href="/ip/{{ip.id}}/update">{{ip.ip}}</a></td>
-                                    <td>
-                                        {% for portstate in ip.tenth_portstates %}
+                                <td><a href="/ip/{{ip.id}}/update">{{ip.ip}}</a></td>
+                                <td>
+                                    {% for portstate in ip.open_ports %}
+                                        {% if portstate.port in collect.get_collect_ports or portstate.port in ip.get_ip_ports %}
+                                            <b><span style="">{{portstate.port}}</span></b>,
+                                        {% else %}
                                             {{portstate.port}},
-                                        {% endfor %}  
-                                        {% if ip.portstate_set.all.count > 9 %}
-                                            <a class="btn">More...</a>
-                                            <div class="accordian-body collapse" id="{{ip.ip}}"> 
-                                                {% for portstate in ip.eleventh_portstates %}
-                                                    {{portstate.port}},
-                                                {% endfor %} 
-                                            </div>
-                                        {% endif %}                             
-                                    </td>   
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <hr>
+                                        {% endif %}
+                                    {% endfor %}                         
+                                </td>   
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             {% endif %}
         </div>
         
@@ -234,7 +224,6 @@
             {% endif %}
         </div>
     </div>
-    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function(){
             $('input[type="radio"]').click(function(){
@@ -243,18 +232,42 @@
                 $(".checked").not(targetBox).hide();
                 $(targetBox).show();
             });
+            $('#ip_list').DataTable({
+                "paging":         true,
+                "ordering": false,
+            });
+            $('#ip_list thead th').each( function () {
+                var title = $(this).text();
+                $(this).html( '<input type="text" />' );
+            } );
+        
+            // DataTable
+            var table = $('#ip_list').DataTable();
+        
+            // Apply the search
+            table.columns().every( function () {
+                var that = this;
+        
+                $( 'input', this.header() ).on( 'keyup change', function () {
+                    if ( that.search() !== this.value ) {
+                        that
+                            .search( this.value )
+                            .draw();
+                    }
+                } );
+            } );
         });
+        
     </script>
     <style type="text/css">
         .checked{
             display: none;
         }
-        .tab-content {
-            {% comment %} height: 450px; {% endcomment %}
-        }
-        .ip-list-table{
-            max-height: 400px;
-            overflow-y: auto;
+        thead input {
+            width: 100%;
+            padding: 3px;
+            box-sizing: border-box;
         }
     </style>
 {% endblock %}
+

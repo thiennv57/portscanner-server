@@ -2,29 +2,37 @@
 {% block title %}Collect{% endblock %}
 {% block content %}
     {% if Collects %}
-        <div class="ip-list-table">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th scope="col">Collect</th>
-                        <th scope="col">Description</th>
+        <table id="collect_list" class="display table table-striped table-bordered table-hover">
+            <thead >
+                <tr>
+                    <th>Collection</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for collect in Collects %}
+                    <tr data-toggle="collapse" data-target="#{{ip.ip}}" class="accordion-toggle">
+                        <td><a href="/collect/{{collect.pk}}/update">{{collect.name}}</a></td>
+                        <td>
+                            {{collect.description}}                                   
+                        </td>   
                     </tr>
-                </thead>
-                <tbody>
-                    {% for collect in Collects %}
-                        <tr data-toggle="collapse" data-target="#{{ip.ip}}" class="accordion-toggle">
-                            <td><a href="/collect/{{collect.pk}}/update">{{collect.name}}</a></td>
-                            <td>
-                                {{collect.description}}                                   
-                            </td>   
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                {% endfor %}
+            </tbody>
+        </table>
     {% endif %}
     <a href="/collect/new" class="btn btn-success " role="button">New collect</a>
-    
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('#collect_list').DataTable({
+                "scrollY":        "400px",
+                "scrollCollapse": true,
+                "paging": false,
+                "ordering": false
+            });
+        });
+        
+    </script>
     <style type="text/css">
         .list-scroll{
             max-height: 450px;
