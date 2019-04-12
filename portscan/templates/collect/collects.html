@@ -1,15 +1,24 @@
 {% extends "pages/base.html" %}
 {% block title %}Collect{% endblock %}
 {% block content %}
-    {% if Collects %}
-        <table id="collect_list" class="display table table-striped table-bordered table-hover">
-            <thead >
-                <tr>
-                    <th>Collection</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
+
+    <form class="form-inline my-2 my-lg-0 pull-right" id="searchform" action="{% url 'collects' %}" method="get" accept-charset="utf-8">
+        <input class="form-control mr-sm-2" id="searchbox" name="port" type="text" placeholder="Search port">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">
+            <i class="fa fa-search"></i>
+        </button>
+    </form>
+
+    
+    <table id="collect_list" class="display table table-striped table-bordered table-hover">
+        <thead >
+            <tr>
+                <th>Group</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if Collects %}
                 {% for collect in Collects %}
                     <tr data-toggle="collapse" data-target="#{{ip.ip}}" class="accordion-toggle">
                         <td><a href="/collect/{{collect.pk}}/update">{{collect.name}}</a></td>
@@ -18,26 +27,27 @@
                         </td>   
                     </tr>
                 {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+            {% endif %}
+        </tbody>
+    </table>
     <a href="/collect/new" class="btn btn-success " role="button">New collect</a>
     <script type="text/javascript">
         $(document).ready(function(){
             $('#collect_list').DataTable({
                 "scrollY":        "400px",
                 "scrollCollapse": true,
-                "paging": false,
-                "ordering": false
+                "paging": true,
+                "ordering": false,
+                "searching": false
             });
         });
         
     </script>
-    <style type="text/css">
+    {% comment %} <style type="text/css">
         .list-scroll{
             max-height: 450px;
             overflow:scroll;
             -webkit-overflow-scrolling: touch;
         }
-    </style>
+    </style> {% endcomment %}
 {% endblock %}

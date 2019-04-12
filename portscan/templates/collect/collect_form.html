@@ -3,19 +3,63 @@
 {% load static %}
 {% block title %}Collect{% endblock %}
 {% block content %}
+    {% for message in messages %}
+        <div class="alert {{ message.tags }} alert-dismissible" id="message-flash" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            {{ message }}
+        </div>
+    {% endfor %}
     {% if collect %}
         <div class="row">
-            <div class ="col-sm-2">
+            <div class ="col-sm-8">
                 <h4>{{collect.name}}</h4>
             </div>
-            <div class ="col-sm-6">
+            <div class ="col-sm-1">
             </div>
             <div class ="col-sm-1">
-                <button type="submit" form="form-collect" class="btn btn-sm btn-outline-success" name="scan_ports">Scan ports</button>
+                {% comment %} <button type="submit" form="form-collect" class="btn btn-sm btn-outline-success" name="scan_ports">Scan ports</button> {% endcomment %}
+                <a href="#" class="btn btn-sm btn-outline-success" data-toggle="modal" data-target="#scanportsModal-{{collect.id}}">Scan ports</a>
             </div>
+
+            <div class="modal fade" id="scanportsModal-{{collect.id}}" tabindex="0" role="dialog" aria-labelledby="scanportsModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="modal-body">
+                                <p class="lead"> Are you sure you want to scan all ip with ports are configured in group <strong>{{collect.name}}</strong></p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <a class="btn btn-sm btn-secondary" class="btn btn-secondary" data-dismiss="modal">Close</a>
+                            <button type="submit" form="form-collect" class="btn btn-sm btn-primary" name="scan_ports">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class ="col-sm-1">
-                <button type="submit" form="form-collect" class="btn btn-sm btn-outline-success" name="scan_all">Scan all</button>
+                {% comment %} <button type="submit" form="form-collect" class="btn btn-sm btn-outline-success" name="scan_all">Scan all</button> {% endcomment %}
+                <a href="#" class="btn btn-sm btn-outline-success" data-toggle="modal" data-target="#scanallModal-{{collect.id}}">Scan all</a>
             </div>
+
+            <div class="modal fade" id="scanallModal-{{collect.id}}" tabindex="0" role="dialog" aria-labelledby="scanallModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="modal-body">
+                                <p class="lead"> Are you sure you want to scan all ports of all ips in group <strong>{{collect.name}}</strong></p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <a class="btn btn-sm btn-secondary" class="btn btn-secondary" data-dismiss="modal">Close</a>
+                            <button type="submit" form="form-collect" class="btn btn-sm btn-primary" name="scan_all">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class ="col-sm-1">
                 <a href="#" class="btn btn-sm btn-outline-danger" data-toggle="modal" data-target="#collectModal-{{collect.id}}">
                     <i class="fa fa-trash-o fa-lg"></i> Delete</a>
@@ -27,11 +71,11 @@
                             {% csrf_token %}
                             <div class="modal-body">
                                 <div class="modal-body">
-                                    <p class="lead"> Are you sure you want to delete this port <strong>{{ip.ip}}</strong></p>
+                                    <p class="lead"> Are you sure you want to delete collect <strong>{{collect.name}}</strong></p>
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <a class="btn btn-sm btn-secondary" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <a class="btn btn-sm btn-secondary" class="btn btn-secondary" data-dismiss="modal">Close</a>
                                 <a href="#" onclick="document.getElementById('collect-delete-{{collect.pk}}').submit()"
                                     class="btn-sm btn btn-danger">Delete</a>
                             </div>
@@ -233,7 +277,7 @@
                 $(targetBox).show();
             });
             $('#ip_list').DataTable({
-                "paging":         true,
+                "paging": true,
                 "ordering": false,
             });
             $('#ip_list thead th').each( function () {
@@ -257,7 +301,9 @@
                 } );
             } );
         });
-        
+        $(document).ready(function(){
+            $("#message-flash").delay(3600).fadeOut('300');
+        });
     </script>
     <style type="text/css">
         .checked{

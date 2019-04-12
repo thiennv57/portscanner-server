@@ -51,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
 ]
 
 ROOT_URLCONF = 'portscanner.urls'
@@ -142,5 +143,14 @@ EMAIL_HOST_USER = 'csc.vnpt@gmail.com'
 EMAIL_HOST_PASSWORD = 'CSC@2019$$'
 
 BACKGROUND_TASK_RUN_ASYNC = True
-BACKGROUND_TASK_ASYNC_THREADS = 2
-MAX_RUN_TIME = 300
+BACKGROUND_TASK_ASYNC_THREADS = 3
+
+from django.contrib.messages import constants as messages
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'alert-info',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success',
+    messages.WARNING: 'alert-warning',
+    messages.ERROR: 'alert-danger',
+}

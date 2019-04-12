@@ -2,11 +2,61 @@
 {% load static %}
 {% block title %}Collect{% endblock %}
 {% block content %}
+
+    {% for message in messages %}
+        <div class="alert {{ message.tags }} alert-dismissible" id="message-flash" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            {{ message }}
+        </div>
+    {% endfor %}
     <div class="row">
-        <div class="col-sm-10">
+        <div class="col-sm-9">
             <h4>{{ip.ip}}</h4>
         </div>
-        <div class="col-sm-2">
+        <div class ="col-sm-1">
+            {% comment %} <button type="submit" form="form-collect" class="btn btn-sm btn-outline-success" name="scan_ports">Scan ports</button> {% endcomment %}
+            <a href="#" class="btn btn-sm btn-outline-success" data-toggle="modal" data-target="#scanportsModal-{{ip.id}}">Scan ports</a>
+        </div>
+
+        <div class="modal fade" id="scanportsModal-{{ip.id}}" tabindex="0" role="dialog" aria-labelledby="scanportsModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="modal-body">
+                            <p class="lead"> Are you sure you want to scan ports are configured of ip <strong>{{ip.ip}}</strong></p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a class="btn btn-sm btn-secondary" class="btn btn-secondary" data-dismiss="modal">Close</a>
+                        <button type="submit" form="form-ip" class="btn btn-sm btn-primary" name="scan_ports">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class ="col-sm-1">
+            {% comment %} <button type="submit" form="form-collect" class="btn btn-sm btn-outline-success" name="scan_all">Scan all</button> {% endcomment %}
+            <a href="#" class="btn btn-sm btn-outline-success" data-toggle="modal" data-target="#scanallModal-{{ip.id}}">Scan all</a>
+        </div>
+
+        <div class="modal fade" id="scanallModal-{{ip.id}}" tabindex="0" role="dialog" aria-labelledby="scanallModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="modal-body">
+                            <p class="lead"> Are you sure you want to scan all ports of ip <strong>{{ip.ip}}</strong></p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a class="btn btn-sm btn-secondary" class="btn btn-secondary" data-dismiss="modal">Close</a>
+                        <button type="submit" form="form-ip" class="btn btn-sm btn-primary" name="scan_all">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-1">
             <a href="#" class="btn btn-sm btn-outline-danger" data-toggle="modal" data-target="#ipModal-{{ip.id}}">
                 <i class="fa fa-trash-o fa-lg"></i> Delete</a>
         </div>
@@ -148,4 +198,12 @@
         <a href="/collect/{{ip.collect.pk}}/update" class="btn btn-sm btn-outline-secondary">
             <i class="fa fa-arrow-left fa-lg"></i> Back</a>
     </div>
+
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $("#message-flash").delay(3600).fadeOut('300');
+        });
+    </script>
 {% endblock %}
+
+
